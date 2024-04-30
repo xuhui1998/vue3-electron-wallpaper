@@ -15,7 +15,7 @@
   "exclude": ["node_modules"],
   "baseUrl": ".",
   "paths": {
-    "@/*":["src/*"]
+    "@/*": ["src/*"]
   },
   "ts-node": {
     "esm": true,

@@ -1,15 +1,15 @@
 <template>
   <div
-    class="m-waterfall flex"
+    class="m-waterfall"
     ref="waterfall"
-    :style="`--borderRadius: ${borderRadius}px; gap: ${columnGap}px; background-color: ${backgroundColor}`"
+    :style="`--borderRadius: ${borderRadius}px; background-color: ${backgroundColor}; width: ${totalWidth}; height: ${height}px;`"
   >
     <Spin
       v-for="(property, index) in imagesProperty"
-      :key="index"
+      :key="property?.id"
       v-show="loaded[index] !== undefined"
       :class="['m-image', { 'm-image-active': property?.id === currentZoomImage }]"
-      :style="`width: ${property?.width}px; height: ${property?.height}px;`"
+      :style="`width: ${property?.width}px; height: ${property?.height}px; top: ${property && property.top}px; left: ${property && property.left}px;`"
       :spinning="!loaded[index]"
       size="small"
       indicator="dynamic-circle"
@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, watchPostEffect } from 'vue'
-import Spin from './spin.vue'
 import { WallpaperListItem } from '@/types'
 
 interface Props {
@@ -52,8 +51,18 @@ const currentZoomImage = ref<WallpaperListItem | null>(null)
 const preColumnHeight = ref<number[]>(Array(props.columnCount).fill(0)) // 每列的高度
 const waterfall = shallowRef() // ref() 的浅层作用形式
 const imageWidth = ref()
+const totalWidth = computed(() => {
+  if (typeof props.width === 'number') {
+    return props.width + 'px'
+  } else {
+    return props.width
+  }
+})
 const len = computed(() => {
   return props.images.length
+})
+const height = computed(() => {
+  return Math.max(...preColumnHeight.value) + props.columnGap
 })
 const loaded = ref(Array(len.value)) // 图片是否加载完成
 const rerender = ref(false)
@@ -65,7 +74,7 @@ watch(
   () => {
     rerender.value = true
     preColumnHeight.value = Array(props.columnCount).fill(0)
-    onPreload()
+    onPreload(len.value)
   },
   {
     deep: true, // 强制转成深层侦听器
@@ -73,17 +82,17 @@ watch(
   }
 )
 watchPostEffect(() => {
+  // console.log(props.images)
   if (props.images.length) {
-    onPreload()
+    onPreload(props.images.length)
   }
 })
-async function onPreload() {
-  // 计算图片宽高和位置（top，left）
+async function onPreload(imageLength?: number) {
   // 计算每列的图片宽度
-  imageWidth.value =
-    (waterfall.value.offsetWidth - (props.columnCount + 1) * props.columnGap) / props.columnCount
-  imagesProperty.value.splice(0)
-  for (let i = 0; i < len.value; i++) {
+  // const rect = waterfall.value.getBoundingClientRect()
+  imageWidth.value = (waterfall.value.offsetWidth - (props.columnCount + 1) * props.columnGap) / props.columnCount
+  const startIndex = imageLength - 18
+  for (let i = startIndex; i < len.value; i++) {
     await loadImage(props.images[i], i)
   }
 }
@@ -101,11 +110,36 @@ function loadImage(imageInfo: WallpaperListItem, n: number) {
         // 存储图片宽高和位置信息
         width: imageWidth.value,
         height: height,
-        ...imageInfo
+        ...imageInfo,
+        ...getPosition(n, height)
       }
       resolve('load')
     }
   })
+}
+function getPosition(i: number, height: number) {
+  // 获取图片位置信息（top，left）
+  if (i < props.columnCount) {
+    preColumnHeight.value[i] = props.columnGap + height
+    return {
+      top: props.columnGap,
+      left: (imageWidth.value + props.columnGap) * i + props.columnGap
+    }
+  } else {
+    const top = Math.min(...preColumnHeight.value)
+    let index = 0
+    for (let n = 0; n < props.columnCount; n++) {
+      if (preColumnHeight.value[n] === top) {
+        index = n
+        break
+      }
+    }
+    preColumnHeight.value[index] = top + props.columnGap + height
+    return {
+      top: top + props.columnGap,
+      left: (imageWidth.value + props.columnGap) * index + props.columnGap
+    }
+  }
 }
 function onLoaded(index: number) {
   loaded.value[index] = true
@@ -116,10 +150,12 @@ function onLoaded(index: number) {
 .m-waterfall {
   position: relative;
   border-radius: var(--borderRadius);
-  flex-wrap: wrap;
+  // flex-wrap: wrap;
+  height: 100%;
   .m-image {
-    justify-content: center;
-    position: relative;
+    // justify-content: center;
+    // position: relative;
+    position: absolute;
     .u-image {
       width: 100%;
       height: 100%;
