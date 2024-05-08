@@ -5,8 +5,8 @@
       <SvgIcon class="menu-icon" icon-class="menu" @click="drawerMenu.open()" :size="24" />
       <div class="tabs">
         <Tabs @tabClick="handleTabClick">
-          <TabPane key="1" title="推荐">推荐</TabPane>
-          <TabPane key="2" title="壁纸库">壁纸库</TabPane>
+          <TabPane tab-key="1" title="推荐"></TabPane>
+          <TabPane tab-key="2" title="壁纸库"></TabPane>
         </Tabs>
       </div>
     </header>
@@ -19,7 +19,7 @@
         </div>
       </template>
     </Drawer>
-    <main class="wallpaper-list">
+    <div v-if="state.currentKey === '1'" class="wallpaper-list">
       <Waterfall
         ref="WaterfallRef"
         :images="state.wallpaperList"
@@ -27,7 +27,8 @@
         :column-gap="8"
         :width="state.screenWidth"
       />
-    </main>
+    </div>
+    <div v-else></div>
   </div>
 </template>
 
@@ -51,7 +52,8 @@ const state = reactive({
   noMore: false,
   categoryList: [],
   drawerVisible: false,
-  activeKey: ''
+  activeKey: '',
+  currentKey: '1'
 })
 
 const getWallpaperList = async (load = false) => {
@@ -79,7 +81,7 @@ const getWallpaperList = async (load = false) => {
 }
 
 const handleTabClick = (key: string) => {
-  console.log(key)
+  state.currentKey = key
 }
 
 const getCategory = async () => {
@@ -122,6 +124,7 @@ onMounted(() => {
   overflow: auto;
   header {
     position: relative;
+    height: 40px;
     .title {
       font-size: 24px;
       height: 36px;
@@ -136,6 +139,12 @@ onMounted(() => {
       position: absolute;
       right: 20px;
       top: 10px;
+    }
+    .tabs {
+      width: 200px;
+      position: absolute;
+      top: 0;
+      left: 70px;
     }
   }
   .nav {

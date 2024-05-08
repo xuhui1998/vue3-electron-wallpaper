@@ -20,8 +20,8 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps<{
-  title?: string;
-  width?: number;
+  title?: string
+  width?: number
 }>()
 
 // 设置一个响应式变量来控制抽屉的开关状态
@@ -46,7 +46,7 @@ defineExpose({ open, close })
 </script>
 
 <style lang="less" scoped>
-@import url("@/assets/style/variables.less");
+@import url('@/assets/style/variables.less');
 .drawer {
   position: fixed;
   top: 0;
@@ -88,5 +88,7 @@ defineExpose({ open, close })
 }
 .content {
   padding: 20px;
+  height: calc(100% - 44px);
+  overflow: auto;
 }
 </style>

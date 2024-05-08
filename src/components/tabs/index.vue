@@ -51,7 +51,6 @@ const initTabs = () => {
 }
 
 const tabsClick = (item) => {
-  console.log(item)
   active.value = item.title
   updateTabBar()
   emits('tabClick', item.key)

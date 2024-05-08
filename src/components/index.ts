@@ -15,5 +15,6 @@ export default {
     Vue.component('Spin', Spin);
     Vue.component('Tabs', Tabs);
     Vue.component('TabPane', TabPane);
+    Vue.component('Button', Button);
   },
 };

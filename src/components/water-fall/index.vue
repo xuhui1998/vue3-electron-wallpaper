@@ -4,20 +4,16 @@
     ref="waterfall"
     :style="`--borderRadius: ${borderRadius}px; background-color: ${backgroundColor}; width: ${totalWidth}; height: ${height}px;`"
   >
-    <Spin
+    <div
       v-for="(property, index) in imagesProperty"
-      :key="property?.id"
-      v-show="loaded[index] !== undefined"
+      :key="index"
       :class="['m-image', { 'm-image-active': property?.id === currentZoomImage }]"
       :style="`width: ${property?.width}px; height: ${property?.height}px; top: ${property && property.top}px; left: ${property && property.left}px;`"
-      :spinning="!loaded[index]"
-      size="small"
-      indicator="dynamic-circle"
       @click="toggleZoom(property)"
     >
-      <img class="u-image" :src="images[index].url" @load="onLoaded(index)" />
-      <div class="tags text-center omit">{{ property?.tag }}</div>
-    </Spin>
+      <img class="u-image" v-lazy="images[index].url" @load="onLoaded(index)" />
+      <div v-if="images[index].url" class="tags text-center omit">{{ property?.tag }}</div>
+    </div>
     <transition name="image-preview">
       <div v-if="currentZoomImage" class="image-preview" @click="toggleZoom(null)">
         <img :src="currentZoomImage.url" />
@@ -90,7 +86,8 @@ watchPostEffect(() => {
 async function onPreload(imageLength?: number) {
   // 计算每列的图片宽度
   // const rect = waterfall.value.getBoundingClientRect()
-  imageWidth.value = (waterfall.value.offsetWidth - (props.columnCount + 1) * props.columnGap) / props.columnCount
+  imageWidth.value =
+    (waterfall.value.offsetWidth - (props.columnCount + 1) * props.columnGap) / props.columnCount
   const startIndex = imageLength - 18
   for (let i = startIndex; i < len.value; i++) {
     await loadImage(props.images[i], i)
@@ -162,6 +159,7 @@ function onLoaded(index: number) {
       border-radius: var(--borderRadius);
       display: inline-block;
       vertical-align: bottom;
+      transition: all 0.25s ease;
     }
     .tags {
       width: 100%;
