@@ -4,7 +4,7 @@
       <div
         v-for="item in paneItems"
         :key="item.title"
-        :class="['tabs-btn', { 'tabs-btn-active': active === item.title }]"
+        :class="['tabs-btn', { 'tabs-btn-active': active === item.key }]"
         @click="tabsClick(item)"
       >
         {{ item.title }}
@@ -19,14 +19,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, onMounted, computed, nextTick } from 'vue'
+import { ref, provide, onMounted, computed, nextTick, watch } from 'vue'
 
 const paneItems = ref([])
 const main = ref()
-const active = ref()
+const active = defineModel<number>()
 const barWidth = ref<number>(0)
 const barOffset = ref<number>(0)
-provide('active', active)
+provide('active', active.value)
 
 const emits = defineEmits<{
   (e: 'tabClick', value: string): void
@@ -35,7 +35,7 @@ const emits = defineEmits<{
 const barStyle = computed(() => {
   return {
     width: `${barWidth.value}px`,
-    left: `${barOffset.value + 16}px` 
+    left: `${barOffset.value + 16}px`
   }
 })
 
@@ -44,21 +44,21 @@ const initTabs = () => {
   panes.forEach((node) => {
     paneItems.value.push({
       title: node.dataset.title,
-      key: node.dataset.key
+      key: Number(node.dataset.key)
     })
   })
-  active.value = paneItems.value[0].title
+  active.value = paneItems.value[0].key
 }
 
 const tabsClick = (item) => {
-  active.value = item.title
+  active.value = item.key
   updateTabBar()
   emits('tabClick', item.key)
 }
 
 const updateTabBar = () => {
   nextTick(() => {
-    const index = paneItems.value.findIndex((item) => item.title === active.value)
+    const index = paneItems.value.findIndex((item) => item.key === active.value)
     const elemTabs = document.querySelectorAll('.tabs-btn')
     const elemTab = elemTabs[index]
     barWidth.value = elemTab ? elemTab.offsetWidth : 0
@@ -73,6 +73,13 @@ const updateTabBar = () => {
     }
   })
 }
+
+watch(
+  () => active.value,
+  (val) => {
+    updateTabBar()
+  }
+)
 
 onMounted(() => {
   initTabs()
@@ -97,7 +104,7 @@ onMounted(() => {
   .tabs-inv-bar {
     position: absolute;
     left: 0;
-    bottom: 0;
+    bottom: 3px;
     background-color: #6078ea;
     height: 2px;
     transition: all 300ms ease-in-out;

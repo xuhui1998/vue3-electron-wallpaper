@@ -1,5 +1,5 @@
 <template>
-  <div v-show="active === title" :data-title="title" :data-key="tabKey" class="pane-content">
+  <div v-show="active == tabKey" :data-title="title" :data-key="tabKey" class="pane-content">
     <slot></slot>
   </div>
 </template>
@@ -7,10 +7,10 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 
-const props = defineProps<{
-  title: string;
-  tabKey: string | number;
+defineProps<{
+  title: string
+  tabKey: number
 }>()
 
-const active = inject("active");
+const active = inject('active')
 </script>

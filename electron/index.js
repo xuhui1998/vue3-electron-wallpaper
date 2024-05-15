@@ -1,4 +1,8 @@
 const path = require('path')
+const { exec } = require('child_process')
+const os = require('os')
+const http = require('http')
+const fs = require('fs')
 
 // 导入electronAPI
 const { app, BrowserWindow, Menu, ipcMain } = require('electron')
@@ -13,16 +17,18 @@ function createWindow() {
 
   // 主窗口
   let mainWindow = null
-
   mainWindow = new BrowserWindow({
+    width: 800,
+    height: 500,
     fullscreenable: false,
     fullscreen: false,
     simpleFullscreen: true,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
       webSecurity: false,
-      allowRunningInsecureContent: true
+      allowRunningInsecureContent: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   })
 
@@ -40,8 +46,8 @@ function createWindow() {
 
   // 当窗口被调整大小时发送事件到渲染器进程
   mainWindow.on('resize', () => {
-    mainWindow.webContents.send('window-resize');
-  });
+    mainWindow.webContents.send('window-resize')
+  })
 }
 
 // const template = [
@@ -67,6 +73,54 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     // 如果应用激活后,窗口依然为0,则重新创建windows应用
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+})
+
+// 设置壁纸
+ipcMain.on('set-wallpaper', async (event, imageUrl) => {
+  const downloadPath = path.join(os.homedir(), 'Downloads', `${new Date().getTime()}.jpg`)
+  // 当图片下载完成后的回调
+  const callback = (downloadError) => {
+    if (downloadError) {
+      console.error(`下载错误: ${downloadError}`)
+      return
+    }
+
+    // 图片下载完成后，设置为桌面壁纸
+    const command = `osascript -e 'tell application "Finder" to set desktop picture to POSIX file "${downloadPath}"'`
+
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        console.error(`执行的错误: ${err}`)
+        return
+      }
+      console.log('壁纸已更改！')
+      // 删除下载的图片
+      fs.unlink(downloadPath, (deleteErr) => {
+        if (deleteErr) {
+          console.error(`删除文件错误: ${deleteErr}`)
+          return
+        }
+      })
+    })
+  }
+  // 下载图片
+  const file = fs.createWriteStream(downloadPath)
+  const request = http
+    .get(imageUrl, (response) => {
+      response.pipe(file)
+      file.on('finish', () => {
+        file.close(callback)
+      })
+    })
+    .on('error', (err) => {
+      fs.unlink(downloadPath) // 在失败时删除文件
+      console.error(`请求错误: ${err.message}`)
+    })
+
+  file.on('error', (err) => {
+    fs.unlink(downloadPath) // 在文件错误中删除文件
+    console.error(`文件错误: ${err.message}`)
   })
 })
 

@@ -11,12 +11,8 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "src/**/*.vue"],
+  "include": ["src/**/*", "src/**/*.vue", "electron/*.d.ts"],
   "exclude": ["node_modules"],
-  "baseUrl": ".",
-  "paths": {
-    "@/*": ["src/*"]
-  },
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node",

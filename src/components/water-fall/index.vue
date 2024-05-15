@@ -11,12 +11,20 @@
       :style="`width: ${property?.width}px; height: ${property?.height}px; top: ${property && property.top}px; left: ${property && property.left}px;`"
       @click="toggleZoom(property)"
     >
-      <img class="u-image" v-lazy="images[index].url" @load="onLoaded(index)" />
-      <div v-if="images[index].url" class="tags text-center omit">{{ property?.tag }}</div>
+      <img class="u-image" v-lazy="images[index]?.url" @load="onLoaded(index)" />
+      <div v-if="images[index]?.url" class="tags text-center omit">{{ property?.tag }}</div>
     </div>
     <transition name="image-preview">
       <div v-if="currentZoomImage" class="image-preview" @click="toggleZoom(null)">
         <img :src="currentZoomImage.url" />
+        <div class="save-wallpaper flex-column" @click.stop="setWallpaper(currentZoomImage.url)">
+          <SvgIcon icon-class="wallpaper" color="#ffd43b" :size="60" />
+          <SvgIcon
+            icon-class="set-wallpaper"
+            color="#ffd43b"
+            :style="{ width: '60px', height: '20px' }"
+          />
+        </div>
       </div>
     </transition>
   </div>
@@ -26,22 +34,28 @@
 import { ref, shallowRef, computed, watch, watchPostEffect } from 'vue'
 import { WallpaperListItem } from '@/types'
 
-interface Props {
-  images: WallpaperListItem[] // 图片数组
-  columnCount?: number // 要划分的列数
-  columnGap?: number // 各列之间的间隙，单位px
-  width?: string | number // 瀑布流区域的总宽度
-  borderRadius?: number // 瀑布流区域和图片圆角，单位px
-  backgroundColor?: string // 瀑布流区域背景填充色
-}
-const props = withDefaults(defineProps<Props>(), {
-  images: () => [],
-  columnCount: 3,
-  columnGap: 20,
-  width: '100%',
-  borderRadius: 8,
-  backgroundColor: '#FFFFFF'
-})
+const props = withDefaults(
+  defineProps<{
+    images: WallpaperListItem[] // 图片数组
+    columnCount?: number // 要划分的列数
+    columnGap?: number // 各列之间的间隙，单位px
+    width?: string | number // 瀑布流区域的总宽度
+    borderRadius?: number // 瀑布流区域和图片圆角，单位px
+    backgroundColor?: string // 瀑布流区域背景填充色
+  }>(),
+  {
+    images: () => [],
+    columnCount: 3,
+    columnGap: 20,
+    width: '100%',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF'
+  }
+)
+const emits = defineEmits<{
+  (e: 'setWallpaper', url: string): void
+}>()
+
 const imagesProperty = ref<any[]>([])
 const currentZoomImage = ref<WallpaperListItem | null>(null)
 const preColumnHeight = ref<number[]>(Array(props.columnCount).fill(0)) // 每列的高度
@@ -83,6 +97,10 @@ watchPostEffect(() => {
     onPreload(props.images.length)
   }
 })
+
+const setWallpaper = (url: string) => {
+  emits('setWallpaper', url)
+};
 async function onPreload(imageLength?: number) {
   // 计算每列的图片宽度
   // const rect = waterfall.value.getBoundingClientRect()
@@ -201,6 +219,12 @@ function onLoaded(index: number) {
       width: 100%;
       height: 100%;
       transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1) 0s;
+    }
+    .save-wallpaper {
+      cursor: pointer;
+      position: absolute;
+      bottom: 20px;
+      z-index: 99;
     }
   }
   .image-preview-enter-active,
