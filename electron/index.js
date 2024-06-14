@@ -5,9 +5,14 @@ const http = require('http')
 const fs = require('fs')
 
 // 导入electronAPI
-const { app, BrowserWindow, Menu, ipcMain } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
 
 require('electron-reload')(__dirname)
+
+const iconPath =
+  process.platform === 'win32'
+    ? path.join(__dirname, 'favicon.png')
+    : path.join(__dirname, 'favicon.png')
 
 // 初始化桌面端应用
 function createWindow() {
@@ -18,6 +23,7 @@ function createWindow() {
   // 主窗口
   let mainWindow = null
   mainWindow = new BrowserWindow({
+    icon: iconPath,
     width: 800,
     height: 500,
     fullscreenable: false,
@@ -66,15 +72,6 @@ function createWindow() {
 // Menu.setApplicationMenu(menu)
 
 // 此方法将在Electron完成后调用,初始化,并准备创建浏览器窗口。
-app.whenReady().then(() => {
-  // 创建windows应用
-  createWindow()
-
-  app.on('activate', function () {
-    // 如果应用激活后,窗口依然为0,则重新创建windows应用
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
 
 // 设置壁纸
 ipcMain.on('set-wallpaper', async (event, imageUrl) => {
@@ -121,6 +118,22 @@ ipcMain.on('set-wallpaper', async (event, imageUrl) => {
   file.on('error', (err) => {
     fs.unlink(downloadPath) // 在文件错误中删除文件
     console.error(`文件错误: ${err.message}`)
+  })
+})
+
+// 系统弹窗
+ipcMain.handle('show-message-box', async (event, options) => {
+  const result = await dialog.showMessageBox(options)
+  return result
+})
+
+app.whenReady().then(() => {
+  // 创建windows应用
+  createWindow()
+
+  app.on('activate', function () {
+    // 如果应用激活后,窗口依然为0,则重新创建windows应用
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 

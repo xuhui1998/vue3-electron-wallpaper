@@ -4,6 +4,8 @@
     ref="waterfall"
     :style="`--borderRadius: ${borderRadius}px; background-color: ${backgroundColor}; width: ${totalWidth}; height: ${height}px;`"
   >
+    <!-- :style="`width: ${property?.width}px; height: ${property?.height}px; top: ${property && property.top}px; left: ${property && property.left}px;`" -->
+    <!-- :style="`width: ${property?.width}px; height: ${property?.height}px; transform: translate3d(${property && property.x}px, ${property && property.y}px, 0);`" -->
     <div
       v-for="(property, index) in imagesProperty"
       :key="index"
@@ -100,8 +102,8 @@ watchPostEffect(() => {
 
 const setWallpaper = (url: string) => {
   emits('setWallpaper', url)
-};
-async function onPreload(imageLength?: number) {
+}
+const onPreload = async (imageLength?: number) => {
   // 计算每列的图片宽度
   // const rect = waterfall.value.getBoundingClientRect()
   imageWidth.value =
@@ -111,7 +113,7 @@ async function onPreload(imageLength?: number) {
     await loadImage(props.images[i], i)
   }
 }
-function loadImage(imageInfo: WallpaperListItem, n: number) {
+const loadImage = (imageInfo: WallpaperListItem, n: number) => {
   return new Promise((resolve) => {
     const image = new Image()
     image.src = imageInfo.url
@@ -132,15 +134,36 @@ function loadImage(imageInfo: WallpaperListItem, n: number) {
     }
   })
 }
-function getPosition(i: number, height: number) {
+const minColumn = computed(() => {
+  let minIndex = -1,
+    minHeight = Infinity
+
+  preColumnHeight.value.forEach((item, index) => {
+    if (item < minHeight) {
+      minHeight = item
+      minIndex = index
+    }
+  })
+
+  return {
+    minIndex,
+    minHeight
+  }
+})
+const getPosition = (i: number, height: number) => {
   // 获取图片位置信息（top，left）
   if (i < props.columnCount) {
     preColumnHeight.value[i] = props.columnGap + height
     return {
+      // position定位
       top: props.columnGap,
-      left: (imageWidth.value + props.columnGap) * i + props.columnGap
+      left: (imageWidth.value + props.columnGap) * i + props.columnGap,
+      // transform位移
+      x: i / props.columnCount !== 0 ? i * (imageWidth.value + props.columnGap) : 0,
+      y: 0
     }
   } else {
+    const { minIndex, minHeight } = minColumn.value
     const top = Math.min(...preColumnHeight.value)
     let index = 0
     for (let n = 0; n < props.columnCount; n++) {
@@ -151,12 +174,16 @@ function getPosition(i: number, height: number) {
     }
     preColumnHeight.value[index] = top + props.columnGap + height
     return {
+      // position定位
       top: top + props.columnGap,
-      left: (imageWidth.value + props.columnGap) * index + props.columnGap
+      left: (imageWidth.value + props.columnGap) * index + props.columnGap,
+      // transform位移
+      x: minIndex % props.columnCount !== 0 ? minIndex * (imageWidth.value + props.columnGap) : 0,
+      y: minHeight
     }
   }
 }
-function onLoaded(index: number) {
+const onLoaded = (index: number) => {
   loaded.value[index] = true
 }
 </script>
@@ -168,8 +195,6 @@ function onLoaded(index: number) {
   // flex-wrap: wrap;
   height: 100%;
   .m-image {
-    // justify-content: center;
-    // position: relative;
     position: absolute;
     .u-image {
       width: 100%;
@@ -188,6 +213,7 @@ function onLoaded(index: number) {
       font-size: 14px;
       line-height: 24px;
       height: 24px;
+      padding: 0 10px;
     }
   }
   .m-image:hover {
@@ -200,7 +226,7 @@ function onLoaded(index: number) {
     left: 0;
     width: 100vw;
     height: 100vh;
-    object-fit: cover; /* 或者 'contain' 保持比例 */
+    object-fit: cover;
     z-index: 10;
   }
   .image-preview {

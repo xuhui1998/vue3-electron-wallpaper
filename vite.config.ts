@@ -1,3 +1,4 @@
+import path from 'path';
 import { fileURLToPath, URL } from 'node:url'
 import { resolve } from 'path';
 import { defineConfig } from 'vite'
