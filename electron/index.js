@@ -11,8 +11,8 @@ require('electron-reload')(__dirname)
 
 const iconPath =
   process.platform === 'win32'
-    ? path.join(__dirname, 'favicon.png')
-    : path.join(__dirname, 'favicon.png')
+    ? path.join(__dirname, '/electron/icon/win-icon.ico')
+    : path.join(__dirname, '/electron/icon/mac-icon.icns')
 
 // 初始化桌面端应用
 function createWindow() {
@@ -54,6 +54,8 @@ function createWindow() {
   mainWindow.on('resize', () => {
     mainWindow.webContents.send('window-resize')
   })
+
+  mainWindow.setMenu(null)
 }
 
 // const template = [
@@ -89,9 +91,21 @@ ipcMain.on('set-wallpaper', async (event, imageUrl) => {
     exec(command, (err, stdout, stderr) => {
       if (err) {
         console.error(`执行的错误: ${err}`)
+        dialog.showMessageBox({
+          type: 'error',
+          title: '提示',
+          message: '设置出错',
+          buttons: ['好的']
+        })
         return
       }
       console.log('壁纸已更改！')
+      dialog.showMessageBox({
+        type: 'question',
+        title: '提示',
+        message: '设置成功',
+        buttons: ['好的']
+      })
       // 删除下载的图片
       fs.unlink(downloadPath, (deleteErr) => {
         if (deleteErr) {

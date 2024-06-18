@@ -114,6 +114,7 @@ const onPreload = async (imageLength?: number) => {
   }
 }
 const loadImage = (imageInfo: WallpaperListItem, n: number) => {
+  if (!imageInfo) return
   return new Promise((resolve) => {
     const image = new Image()
     image.src = imageInfo.url

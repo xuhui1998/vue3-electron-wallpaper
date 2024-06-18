@@ -1,0 +1,16 @@
+{
+  "title": "绮梦花",
+  "contents": [
+    { "x": 380, "y": 170, "type": "link", "path": "/Applications" },
+    {
+      "x": 200,
+      "y": 170,
+      "type": "file",
+      "path": "../out/vue3-vite-electron-darwin-x64/vue3-vite-electron.app"
+    }
+  ],
+  "window": {
+    "size": { "width": 800, "height": 500 }
+  },
+  "format": "UDBZ"
+}

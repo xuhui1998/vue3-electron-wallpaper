@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <header>
-      <span class="title pl-10" @click="test">精选壁纸</span>
+      <span class="title pl-10">绮梦花壁纸</span>
       <SvgIcon class="menu-icon" icon-class="menu" @click="drawerMenu.open()" :size="24" />
       <div class="search-box">
         <input
@@ -10,6 +10,7 @@
           placeholder="请输入关键词"
           @keydown.enter="search"
         />
+        <SvgIcon class="search-icon" icon-class="search" @click="search" :size="20" />
       </div>
       <div class="tabs">
         <Tabs v-model="state.activeKey" @tabClick="handleTabClick">
@@ -43,7 +44,7 @@
         @set-wallpaper="setWallpaper"
       />
       <div v-else class="empty">
-        <SvgIcon class="icon" icon-class="empty" :size="50" />
+        <SvgIcon class="icon" icon-class="empty" :size="150" />
         <span class="text">暂无数据</span>
       </div>
     </div>
@@ -58,7 +59,7 @@
         @set-wallpaper="setWallpaper"
       />
       <div v-else class="empty">
-        <SvgIcon class="icon" icon-class="empty" :size="50" />
+        <SvgIcon class="icon" icon-class="empty" :size="150" />
         <span class="text">暂无数据</span>
       </div>
     </div>
@@ -186,6 +187,15 @@ const getWallpaperSearchList = async (load = false) => {
       content: state.searchKey,
       ...state.storePageInfo
     })
+    if (data.list.length === 0) {
+      const result = await window.electronAPI.showMessageBox({
+        type: 'info',
+        title: '提示',
+        message: '没有搜到相关结果',
+        buttons: ['好的']
+      })
+      return
+    }
     state.wallpaperStore = data.list.map((item) => {
       return {
         ...item,
@@ -196,16 +206,6 @@ const getWallpaperSearchList = async (load = false) => {
   } catch {
     console.log('fetch error')
   }
-}
-
-const test = async () => {
-  const result = await window.electronAPI.showMessageBox({
-    type: 'info',
-    title: '提示',
-    message: '没有搜到相关结果',
-    buttons: ['关闭']
-  })
-  console.log(result)
 }
 
 const handleTabClick = (key: number) => {
@@ -325,13 +325,13 @@ onMounted(() => {
       transition: width 0.5s ease-in-out;
       display: flex;
       align-items: center;
-      width: 100px;
+      width: 120px;
     }
     .search-box:focus-within {
       border-color: #4096ff;
       box-shadow: 0 0 0 2px #0591ff1a;
       outline: 0;
-      width: 150px;
+      width: 160px;
       transition: width 0.5s ease-in-out;
     }
     .search-input {
