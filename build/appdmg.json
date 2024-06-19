@@ -6,11 +6,11 @@
       "x": 200,
       "y": 170,
       "type": "file",
-      "path": "../out/vue3-vite-electron-darwin-x64/vue3-vite-electron.app"
+      "path": "../out/绮梦花-darwin-x64/绮梦花.app"
     }
   ],
   "window": {
-    "size": { "width": 800, "height": 500 }
+    "size": { "width": 540, "height": 380 }
   },
   "format": "UDBZ"
 }

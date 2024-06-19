@@ -9,21 +9,16 @@ const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
 
 require('electron-reload')(__dirname)
 
-const iconPath =
-  process.platform === 'win32'
-    ? path.join(__dirname, '/electron/icon/win-icon.ico')
-    : path.join(__dirname, '/electron/icon/mac-icon.icns')
-
 // 初始化桌面端应用
 function createWindow() {
   // TODO: 根据不同环境设置不同的应用配置
   const isDev = process.env.IS_DEV === 'true'
   console.log(isDev, 'isDev')
+  // console.log(iconPath);
 
   // 主窗口
-  let mainWindow = null
-  mainWindow = new BrowserWindow({
-    icon: iconPath,
+  const mainWindow = new BrowserWindow({
+    icon: path.join(__dirname, '/icon/win-icon.ico'),
     width: 800,
     height: 500,
     fullscreenable: false,
@@ -37,6 +32,10 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js')
     }
   })
+  // mac设置应用图标
+  if (process.platform === 'darwin') {
+    app.dock.setIcon(path.join(__dirname, '/icon/mac-icon.icns'))
+  }
 
   // 如果当前为开发环境,则执行开发环境的配置
   if (isDev) {
@@ -79,41 +78,56 @@ function createWindow() {
 ipcMain.on('set-wallpaper', async (event, imageUrl) => {
   const downloadPath = path.join(os.homedir(), 'Downloads', `${new Date().getTime()}.jpg`)
   // 当图片下载完成后的回调
-  const callback = (downloadError) => {
+  const callback = async (downloadError) => {
     if (downloadError) {
       console.error(`下载错误: ${downloadError}`)
       return
     }
 
     // 图片下载完成后，设置为桌面壁纸
-    const command = `osascript -e 'tell application "Finder" to set desktop picture to POSIX file "${downloadPath}"'`
+    const macCommand = `osascript -e 'tell application "Finder" to set desktop picture to POSIX file "${downloadPath}"'`
+    const winCommand = `powershell -Command "$reg = New-Object -ComObject WScript.Shell; $reg.RegWrite('HKCU:Control Panel\\Desktop\\Wallpaper', '${downloadPath}', 'REG_SZ'); $reg.RegWrite('HKCU:Control Panel\\Desktop\\WallpaperStyle', 10, 'REG_DWORD'); RUNDLL32.EXE user32.dll, UpdatePerUserSystemParameters , 1, True"`
 
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        console.error(`执行的错误: ${err}`)
-        dialog.showMessageBox({
-          type: 'error',
-          title: '提示',
-          message: '设置出错',
-          buttons: ['好的']
-        })
-        return
-      }
-      console.log('壁纸已更改！')
-      dialog.showMessageBox({
-        type: 'question',
-        title: '提示',
-        message: '设置成功',
-        buttons: ['好的']
-      })
-      // 删除下载的图片
-      fs.unlink(downloadPath, (deleteErr) => {
-        if (deleteErr) {
-          console.error(`删除文件错误: ${deleteErr}`)
+    // windows平台
+    if (process.platform === 'win32') {
+      exec(winCommand, (err, stdout, stderr) => {
+        if (err) {
+          console.error(`执行的错误: ${err}`)
+          dialog.showErrorBox('提示', '设置出错')
           return
         }
+        dialog.showErrorBox('提示', '设置成功')
+        console.log('壁纸已更改！')
       })
-    })
+    } else if (process.platform === 'darwin') {
+      // mac平台
+      exec(macCommand, (err, stdout, stderr) => {
+        if (err) {
+          console.error(`执行的错误: ${err}`)
+          dialog.showMessageBox({
+            type: 'error',
+            title: '提示',
+            message: '设置出错',
+            buttons: ['好的']
+          })
+          return
+        }
+        console.log('壁纸已更改！')
+        dialog.showMessageBox({
+          type: 'question',
+          title: '提示',
+          message: '设置成功',
+          buttons: ['好的']
+        })
+        // 删除下载的图片
+        fs.unlink(downloadPath, (deleteErr) => {
+          if (deleteErr) {
+            console.error(`删除文件错误: ${deleteErr}`)
+            return
+          }
+        })
+      })
+    }
   }
   // 下载图片
   const file = fs.createWriteStream(downloadPath)

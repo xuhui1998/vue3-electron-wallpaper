@@ -16,11 +16,28 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "dist": "electron-builder",
-    "package-mac": "appdmg ./build/appdmg.json ~/Desktop/绮梦花.dmg",
-    "package-win": ""
+    "package-mac": "appdmg ./build/appdmg.json ~/Desktop/绮梦花.dmg"
   },
   "build": {
-    "appId": "com.flower.wallpaper"
+    "appId": "com.flower.wallpaper",
+    "productName": "绮梦花",
+    "copyright": "Copyright © 2024",
+    "mac": {
+      "icon": "electron/icon/mac-icon.icns"
+    },
+    "win": {
+      "icon": "electron/icon/win-icon.ico"
+    }
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "name": "绮梦花",
+        "appVersion": "0.0.1",
+        "appCopyright": "Copyright © 2024 Hui Xu",
+        "icon": "electron/icon/mac-icon.icns"
+      }
+    }
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [

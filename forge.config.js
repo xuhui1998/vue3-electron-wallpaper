@@ -4,11 +4,11 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses')
 module.exports = {
   packagerConfig: {
     name: '绮梦花',
-    productName: '绮梦花壁纸',
+    productName: '绮梦花',
     out: './',
     overwrite: true,
     asar: true,
-    icon: '/electron/icon/icon.png',
+    icon: '/electron/icon/icon',
     version: '1.0.0', // 应用程序版本号
     copyright: 'Copyright © 2024' // 版权信息
   },
