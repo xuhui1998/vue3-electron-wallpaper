@@ -2,7 +2,6 @@ import '@/assets/style/base.less';
 import '@/utils/request';
 import globalComponents from '@/components';
 import 'virtual:svg-icons-register';
-import 'vue-amazing-ui/css'
 import VueLazyLoad from 'vue3-lazy'
 
 import { createApp } from 'vue'

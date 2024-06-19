@@ -15,7 +15,6 @@
     "format": "prettier --write src/",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "dist": "electron-builder",
     "package-mac": "appdmg ./build/appdmg.json ~/Desktop/绮梦花.dmg"
   },
   "build": {
@@ -27,6 +26,10 @@
     },
     "win": {
       "icon": "electron/icon/win-icon.ico"
+    },
+    "directories": {
+      "output": "output",
+      "app": "/dist"
     }
   },
   "config": {
@@ -70,7 +73,6 @@
     "pinia": "^2.1.7",
     "vite-plugin-svg-icons": "^2.0.1",
     "vue": "^3.4.21",
-    "vue-amazing-ui": "^0.1.38",
     "vue-router": "^4.3.0",
     "vue3-lazy": "^1.0.0-alpha.1"
   },
@@ -99,7 +101,6 @@
     "prettier": "^3.2.5",
     "typescript": "~5.4.0",
     "vite": "^5.2.8",
-    "vue-tsc": "^2.0.11",
-    "electron-builder": "^24.13.3"
+    "vue-tsc": "^2.0.11"
   }
 }
